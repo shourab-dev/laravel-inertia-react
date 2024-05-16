@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TaskController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -29,6 +30,16 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', 'showUser')->name('all');
         Route::get('/add', 'addUser')->name('add');
         Route::post('/store', 'storeUser')->name('store');
+        Route::put('/update/{id}', 'updateUser')->name('update');
+        Route::delete('/delete/{id}', 'deleteUser')->name('delete');
+    });
+    //* ROUTE FOR Tasks
+    Route::prefix('/task')->controller(TaskController::class)->name('task.')->group(function () {
+        Route::get('/', 'showTask')->name('all');
+        Route::get('/add', 'addTask')->name('add');
+        Route::post('/store', 'storeTask')->name('store');
+        Route::put('/update/{id}', 'updateTask')->name('update');
+        Route::delete('/delete/{id}', 'deleteTask')->name('delete');
     });
 });
 

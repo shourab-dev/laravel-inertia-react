@@ -4,13 +4,13 @@ import PrimaryButton from "@/Components/PrimaryButton";
 import SelectInput from "@/Components/SelectInput";
 import TextInput from "@/Components/TextInput";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, router } from "@inertiajs/react";
+import { Head, router, useForm } from "@inertiajs/react";
 import React, { useState } from "react";
 
 const User = ({ auth, users, queryParams = null }) => {
     const { data, links, meta } = users;
     const [openModal, setOpenModal] = useState(false);
-    const [selectedUser, setSelectedUser] = useState(null);
+    const [deleteModal, setDeleteModal] = useState(false);
 
     queryParams = queryParams || {};
 
@@ -36,6 +36,35 @@ const User = ({ auth, users, queryParams = null }) => {
         }
     };
 
+    const {
+        data: userData,
+        setData: setSelectedUser,
+        processing,
+        errors,
+        put,
+        delete: destroy,
+    } = useForm({
+        name: "",
+        email: "",
+    });
+
+    const updateUser = (e) => {
+        e.preventDefault();
+        put(route("user.update", userData?.id), {
+            onSuccess: () => {
+                setOpenModal(false);
+            },
+        });
+    };
+    const deleteUser = (e) => {
+
+        destroy(route("user.delete", userData?.id), {
+            onSuccess: () => {
+                setDeleteModal(false);
+            },
+        });
+    };
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -55,6 +84,7 @@ const User = ({ auth, users, queryParams = null }) => {
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900">
+                            
                             <table className="table-auto w-[100%] text-center border-collapse border border-slate-200">
                                 <thead>
                                     <tr>
@@ -195,7 +225,13 @@ const User = ({ auth, users, queryParams = null }) => {
                                                 >
                                                     Edit
                                                 </PrimaryButton>
-                                                <PrimaryButton className="ms-2 bg-red-600">
+                                                <PrimaryButton
+                                                    onClick={(e) => {
+                                                        setDeleteModal(true);
+                                                        setSelectedUser(user);
+                                                    }}
+                                                    className="ms-2 bg-red-600"
+                                                >
                                                     Delete
                                                 </PrimaryButton>
                                             </td>
@@ -211,25 +247,63 @@ const User = ({ auth, users, queryParams = null }) => {
             </div>
             <Modal
                 show={openModal}
-                title={`Edit ${selectedUser?.name}`}
-                onClose={e=>setOpenModal(false)}
+                title={`Edit User`}
+                onClose={(e) => setOpenModal(false)}
             >
-                <TextInput
-                    className="w-[100%] my-2"
-                    placeholder="Name"
-                    defaultValue={selectedUser?.name}
-                />
-                <TextInput
-                    className="w-[100%] my-2"
-                    placeholder="Name"
-                    defaultValue={selectedUser?.email}
-                />
-                <PrimaryButton
-                    className="w-[100%] my-2 py-4 justify-center"
-                  
-                >
-                    Update User
-                </PrimaryButton>
+                <form onSubmit={updateUser}>
+                    <TextInput
+                        className="w-[100%] my-2"
+                        placeholder="Name"
+                        defaultValue={userData.name}
+                        onChange={(e) =>
+                            setSelectedUser("name", e.target.value)
+                        }
+                    />
+                    <TextInput
+                        className="w-[100%] my-2"
+                        placeholder="Name"
+                        defaultValue={userData.email}
+                        onChange={(e) =>
+                            setSelectedUser("email", e.target.value)
+                        }
+                    />
+                    <PrimaryButton
+                        type="submit"
+                        className="w-[100%] my-2 py-4 justify-center"
+                    >
+                        Update User
+                    </PrimaryButton>
+                </form>
+            </Modal>
+
+            <Modal
+                show={deleteModal}
+                title="Are you sure?"
+                onClose={(e) => setDeleteModal(false)}
+            >
+                <p className="font-medium">
+                    This action can not be reverted. Please confirm if you want
+                    to delete this{" "}
+                    <span className="font-bold text-red-500">
+                        ({userData.name})
+                    </span>{" "}
+                    user.
+                </p>
+
+                <div className="my-3 flex">
+                    <PrimaryButton
+                        onClick={deleteUser}
+                        className="me-3 w-[50%] justify-center py-3 bg-red-500 hover:bg-red-700 focus:bg-red-500"
+                    >
+                        Confirm, Delete
+                    </PrimaryButton>
+                    <PrimaryButton
+                        onClick={(e) => setDeleteModal(false)}
+                        className="me-3 w-[50%] justify-center py-3 "
+                    >
+                        No
+                    </PrimaryButton>
+                </div>
             </Modal>
         </AuthenticatedLayout>
     );

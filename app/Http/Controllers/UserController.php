@@ -11,7 +11,7 @@ class UserController extends Controller
 {
     function showUser(Request $request)
     {
-
+        
         $query = User::query();
         if ($request->searchable) {
             $query->whereAny(['name', 'email'], 'like', '%' . $request->searchable . '%');
@@ -27,7 +27,7 @@ class UserController extends Controller
         $users = $query->where('id', '!=', auth()->id())->orderBy($request->sort ?? 'created_at', $request->direction ?? 'desc')->paginate(20)->onEachSide(1);
         return inertia('User', [
             'users' => UserResource::collection($users),
-            'queryParams' => request()->query() ?: null,
+            'queryParams' => collect(request()->query())->except('page')->toArray() ?: null,
         ]);
     }
 
@@ -52,7 +52,27 @@ class UserController extends Controller
         ]);
 
         return to_route('user.all');
+    }
+    function updateUser(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|min:3',
+            'email' => 'required|unique:users,email,' . $id,
+        ]);
 
 
+        $user = User::find($id);
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->save();
+
+
+        return to_route('user.all');
+    }
+
+    function deleteUser($id)
+    {
+        User::find($id)->delete();
+        return to_route('user.all');
     }
 }
