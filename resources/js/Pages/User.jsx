@@ -1,12 +1,17 @@
+import Modal from "@/Components/Modal";
 import Pagination from "@/Components/Pagination";
+import PrimaryButton from "@/Components/PrimaryButton";
 import SelectInput from "@/Components/SelectInput";
 import TextInput from "@/Components/TextInput";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, router } from "@inertiajs/react";
-import React from "react";
+import React, { useState } from "react";
 
 const User = ({ auth, users, queryParams = null }) => {
     const { data, links, meta } = users;
+    const [openModal, setOpenModal] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
+
     queryParams = queryParams || {};
 
     const searchResult = (name, value) => {
@@ -27,7 +32,7 @@ const User = ({ auth, users, queryParams = null }) => {
         if (column && direction) {
             queryParams["sort"] = column;
             queryParams["direction"] = direction;
-            router.get(route('user.all'), queryParams);
+            router.get(route("user.all"), queryParams);
         }
     };
 
@@ -181,7 +186,18 @@ const User = ({ auth, users, queryParams = null }) => {
                                                 {user.created_at}
                                             </td>
                                             <td className="border border-slate-200 py-4">
-                                                ads
+                                                <PrimaryButton
+                                                    onClick={(e) => {
+                                                        setOpenModal(true);
+                                                        setSelectedUser(user);
+                                                    }}
+                                                    className="bg-purple-700"
+                                                >
+                                                    Edit
+                                                </PrimaryButton>
+                                                <PrimaryButton className="ms-2 bg-red-600">
+                                                    Delete
+                                                </PrimaryButton>
                                             </td>
                                         </tr>
                                     ))}
@@ -193,6 +209,28 @@ const User = ({ auth, users, queryParams = null }) => {
                     </div>
                 </div>
             </div>
+            <Modal
+                show={openModal}
+                title={`Edit ${selectedUser?.name}`}
+                onClose={e=>setOpenModal(false)}
+            >
+                <TextInput
+                    className="w-[100%] my-2"
+                    placeholder="Name"
+                    defaultValue={selectedUser?.name}
+                />
+                <TextInput
+                    className="w-[100%] my-2"
+                    placeholder="Name"
+                    defaultValue={selectedUser?.email}
+                />
+                <PrimaryButton
+                    className="w-[100%] my-2 py-4 justify-center"
+                  
+                >
+                    Update User
+                </PrimaryButton>
+            </Modal>
         </AuthenticatedLayout>
     );
 };

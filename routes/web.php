@@ -28,6 +28,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('/user')->controller(UserController::class)->name('user.')->group(function () {
         Route::get('/', 'showUser')->name('all');
         Route::get('/add', 'addUser')->name('add');
+        Route::post('/store', 'storeUser')->name('store');
     });
 });
 
